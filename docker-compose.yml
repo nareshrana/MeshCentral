@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: meshcentral-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - meshnet
+
+  meshcentral:
+    image: typhonragewind/meshcentral:mongodb-latest
+    container_name: meshcentral
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    environment:
+      - HOSTNAME=monitor.XXXXXXXXXXX
+      - REVERSE_PROXY=127.0.0.1
+      - REVERSE_PROXY_TLS_PORT=443
+      - ALLOW_NEW_ACCOUNTS=true
+      - IFRAME=false
+      - WEBRTC=false
+      - MONGO_URL=mongodb://mongodb:27017/meshcentral
+    ports:
+      
+      - "127.0.0.1:8090:443"
+    volumes:
+      - meshcentral-data:/opt/meshcentral/meshcentral-data
+      - meshcentral-files:/opt/meshcentral/meshcentral-files
+      - meshcentral-backups:/opt/meshcentral/meshcentral-backups
+      - meshcentral-web:/opt/meshcentral/meshcentral-web
+    networks:
+      - meshnet
+
+networks:
+  meshnet:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  meshcentral-data:
+  meshcentral-files:
+  meshcentral-backups:
+  meshcentral-web:
